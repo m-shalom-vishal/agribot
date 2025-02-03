@@ -4,6 +4,10 @@ import pandas as pd
 import os
 import nltk
 from nltk.tokenize import word_tokenize
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.lsa import LsaSummarizer
+
 
 nltk.data.path.append(os.path.abspath("nltk_data"))
 nltk.download('punkt_tab')
@@ -80,11 +84,18 @@ def preprocess_query(query):
     tokens = word_tokenize(query.lower())
     return " ".join(tokens)
 
+def summarize_text(text, sentences=2):
+    """Summarizes text using LSA (Latent Semantic Analysis)"""
+    parser = PlaintextParser.from_string(text, Tokenizer("english"))
+    summarizer = LsaSummarizer()
+    summary = summarizer(parser.document, sentences)
+    return " ".join([str(sentence) for sentence in summary])
+
 def save_to_csv(query, results):
     """Saves search query and results to a CSV file"""
     data = []
     for result in results:
-        summarized_snippet = result["snippet"]  # Since we're not summarizing, just use the original snippet
+        summarized_snippet = summarize_text(result["snippet"])
         data.append([query, result["title"], result["link"], summarized_snippet])
     
     df = pd.DataFrame(data, columns=["Query", "Title", "Link", "Summary"])
@@ -94,6 +105,12 @@ def save_to_csv(query, results):
     else:
         df.to_csv(CSV_FILE, mode='w', header=True, index=False)
 
+def detect_greeting(query):
+    """Detects if the user input is a greeting"""
+    greetings_keywords = ['hello', 'hi', 'good morning', 'good afternoon', 'good evening', 'hey', 'hi there', 'bye', 'goodbye', 'take care']
+    query = query.lower()
+    return any(greeting in query for greeting in greetings_keywords)
+
 # Page Selection
 if page == "Chatbot":
     st.markdown("<div class='scrolling-title'>🌾 AgriBot - Your Smart Agricultural Assistant 🚜</div>", unsafe_allow_html=True)
@@ -101,20 +118,24 @@ if page == "Chatbot":
     query = st.text_input("Enter your question:")
     
     if query:
-        processed_query = preprocess_query(query)
-        search_results = search_google(processed_query)
-        
-        if not search_results:
-            st.warning("No relevant results found. Try rephrasing your query.")
+        if detect_greeting(query):
+            st.markdown("<h1 style='color: #333333;'>Hello, Welcome to Agribot! How can I assist you today?</h1>", unsafe_allow_html=True)
         else:
-            st.subheader("Top Results:")
-            for result in search_results[:5]:
-                st.markdown(f"**[{result['title']}]({result['link']})**")
-                st.write(result["snippet"])
-                st.write("---")
+            processed_query = preprocess_query(query)
+            search_results = search_google(processed_query)
             
-            save_to_csv(query, search_results)
-            st.success("Your search history has been saved! ✅")
+            if not search_results:
+                st.warning("No relevant results found. Try rephrasing your query.")
+            else:
+                st.subheader("Top Results:")
+                for result in search_results[:5]:
+                    summarized_snippet = summarize_text(result["snippet"])
+                    st.markdown(f"**[{result['title']}]({result['link']})**")
+                    st.write(summarized_snippet)
+                    st.write("---")
+                
+                save_to_csv(query, search_results)
+                st.success("Your search history has been saved! ✅")
 
 elif page == "Search History":
     st.title("📂 Search History")
