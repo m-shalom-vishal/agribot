@@ -5,21 +5,24 @@ import os
 import nltk
 from nltk.tokenize import word_tokenize
 
-# Download necessary NLTK data
+nltk.data.path.append(os.path.abspath("nltk_data"))
 nltk.download('punkt')
 
-# Google Custom Search API Config (Replace with your keys)
-API_KEY = "AIzaSyBGKiSPD8Aj1TWm1OqE9Cpn0laxzE1n0O0"
-SEARCH_ENGINE_ID = "57e4625115f494176"
-CSV_FILE = "search_history.csv"
+# Google Custom Search API Config
+API_KEY = "AIzaSyBGKiSPD8Aj1TWm1OqE9Cpn0laxzE1n0O0"  # Replace with your API key
+SEARCH_ENGINE_ID = "57e4625115f494176"  # Replace with your CSE ID
+CSV_FILE = "search_history.csv"  # File to store search history
 
 # Apply Web Designing with Custom CSS
 st.markdown(
     """
     <style>
         .stApp {
-            background: linear-gradient(135deg, rgb(180, 250, 16), rgb(119, 235, 108));
+            background: linear-gradient(135deg,rgb(180, 250, 16),rgb(119, 235, 108));
             color: #333;
+        }
+        .sidebar .sidebar-content {
+            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
         }
         h1 {
             color: darkblue;
@@ -28,7 +31,7 @@ st.markdown(
         }
         .stTextInput>div>div>input {
             background-color: white;
-            color: darkblue;
+            color:darkblue;
             border: 2px solid #ff9a9e;
             border-radius: 8px;
         }
@@ -81,44 +84,37 @@ def save_to_csv(query, results):
     """Saves search query and results to a CSV file"""
     data = []
     for result in results:
-        data.append([query, result["title"], result["link"], result["snippet"]])
+        summarized_snippet = result["snippet"]  # Since we're not summarizing, just use the original snippet
+        data.append([query, result["title"], result["link"], summarized_snippet])
     
-    df = pd.DataFrame(data, columns=["Query", "Title", "Link", "Snippet"])
+    df = pd.DataFrame(data, columns=["Query", "Title", "Link", "Summary"])
     
     if os.path.exists(CSV_FILE):
         df.to_csv(CSV_FILE, mode='a', header=False, index=False)
     else:
         df.to_csv(CSV_FILE, mode='w', header=True, index=False)
 
-def detect_greeting(query):
-    """Detects if the user input is a greeting"""
-    greetings_keywords = ['hello', 'hi', 'good morning', 'good afternoon', 'good evening', 'hey', 'hi there', 'bye', 'goodbye', 'take care']
-    return any(greeting in query.lower() for greeting in greetings_keywords)
-
 # Page Selection
 if page == "Chatbot":
     st.markdown("<div class='scrolling-title'>🌾 AgriBot - Your Smart Agricultural Assistant 🚜</div>", unsafe_allow_html=True)
     
     query = st.text_input("Enter your question:")
-
+    
     if query:
-        if detect_greeting(query):
-            st.markdown("<h1 style='color: #333333;'>Hello, Welcome to AgriBot! How can I assist you today?</h1>", unsafe_allow_html=True)
+        processed_query = preprocess_query(query)
+        search_results = search_google(processed_query)
+        
+        if not search_results:
+            st.warning("No relevant results found. Try rephrasing your query.")
         else:
-            processed_query = preprocess_query(query)
-            search_results = search_google(processed_query)
+            st.subheader("Top Results:")
+            for result in search_results[:5]:
+                st.markdown(f"**[{result['title']}]({result['link']})**")
+                st.write(result["snippet"])
+                st.write("---")
             
-            if not search_results:
-                st.warning("No relevant results found. Try rephrasing your query.")
-            else:
-                st.subheader("Top Results:")
-                for result in search_results[:5]:
-                    st.markdown(f"**[{result['title']}]({result['link']})**")
-                    st.write(result["snippet"])
-                    st.write("---")
-                
-                save_to_csv(query, search_results)
-                st.success("Your search history has been saved! ✅")
+            save_to_csv(query, search_results)
+            st.success("Your search history has been saved! ✅")
 
 elif page == "Search History":
     st.title("📂 Search History")
