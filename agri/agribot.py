@@ -1,47 +1,129 @@
 import streamlit as st
 import requests
+import pandas as pd
+import os
 import nltk
-from textblob import TextBlob
+from nltk.tokenize import word_tokenize
 
-nltk.download("punkt")
+# Download necessary NLTK data
+nltk.download('punkt')
 
-# Google Custom Search API credentials
-GOOGLE_API_KEY = "AIzaSyBGKiSPD8Aj1TWm1OqE9Cpn0laxzE1n0O0"
+# Google Custom Search API Config (Replace with your keys)
+API_KEY = "AIzaSyBGKiSPD8Aj1TWm1OqE9Cpn0laxzE1n0O0"
 SEARCH_ENGINE_ID = "57e4625115f494176"
+CSV_FILE = "search_history.csv"
 
-def google_search(query):
-    url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={GOOGLE_API_KEY}&cx={SEARCH_ENGINE_ID}"
-    response = requests.get(url)
-    data = response.json()
-    
-    if "items" in data:
-        results = []
-        for item in data["items"][:3]:  # Top 3 results
-            results.append(f"[{item['title']}]({item['link']})")
-        return "\n".join(results)
-    return "No relevant information found."
+# Apply Web Designing with Custom CSS
+st.markdown(
+    """
+    <style>
+        .stApp {
+            background: linear-gradient(135deg, rgb(180, 250, 16), rgb(119, 235, 108));
+            color: #333;
+        }
+        h1 {
+            color: darkblue;
+            text-align: center;
+            font-size: 32px;
+        }
+        .stTextInput>div>div>input {
+            background-color: white;
+            color: darkblue;
+            border: 2px solid #ff9a9e;
+            border-radius: 8px;
+        }
+        .stButton>button {
+            background-color: #ff758c;
+            color: white;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        @keyframes scrollText {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-100%); }
+        }
+        .scrolling-title {
+            font-size: 40px;
+            font-weight: bold;
+            color: green;
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            animation: scrollText 10s linear infinite;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-def simple_nlp_response(user_input):
-    user_input = user_input.lower()
+# Sidebar Navigation
+st.sidebar.title("🌾 AgriBot Menu")
+page = st.sidebar.radio("Go to", ["Chatbot", "Search History"])
+
+# NLP Functions
+def search_google(query):
+    """Fetches results from Google Custom Search API"""
+    url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={API_KEY}&cx={SEARCH_ENGINE_ID}"
+    response = requests.get(url).json()
     
-    # Basic intent detection
-    if "crop" in user_input or "best crop" in user_input:
-        return "Choosing the best crop depends on soil type, climate, and water availability. Check the search results for more details."
-    elif "fertilizer" in user_input:
-        return "Fertilizer recommendations depend on the soil's nutrient content. It's best to get a soil test before applying fertilizers."
-    elif "pest control" in user_input or "how to control pests" in user_input:
-        return "Common pest control methods include biological control, organic pesticides, and crop rotation."
+    results = []
+    for item in response.get("items", []):
+        results.append({"title": item["title"], "link": item["link"], "snippet": item["snippet"]})
+    
+    return results
+
+def preprocess_query(query):
+    """Preprocesses user query using NLP (tokenization)"""
+    tokens = word_tokenize(query.lower())
+    return " ".join(tokens)
+
+def save_to_csv(query, results):
+    """Saves search query and results to a CSV file"""
+    data = []
+    for result in results:
+        data.append([query, result["title"], result["link"], result["snippet"]])
+    
+    df = pd.DataFrame(data, columns=["Query", "Title", "Link", "Snippet"])
+    
+    if os.path.exists(CSV_FILE):
+        df.to_csv(CSV_FILE, mode='a', header=False, index=False)
     else:
-        return "I'm not sure, but check the search results for the most relevant information."
+        df.to_csv(CSV_FILE, mode='w', header=True, index=False)
 
-st.title("Agriculture Chatbot")
-st.write("Ask me anything about farming, crops, or agriculture!")
+def detect_greeting(query):
+    """Detects if the user input is a greeting"""
+    greetings_keywords = ['hello', 'hi', 'good morning', 'good afternoon', 'good evening', 'hey', 'hi there', 'bye', 'goodbye', 'take care']
+    return any(greeting in query.lower() for greeting in greetings_keywords)
 
-user_input = st.text_input("Enter your question:")
+# Page Selection
+if page == "Chatbot":
+    st.markdown("<div class='scrolling-title'>🌾 AgriBot - Your Smart Agricultural Assistant 🚜</div>", unsafe_allow_html=True)
+    
+    query = st.text_input("Enter your question:")
 
-if user_input:
-    st.subheader("NLP-Based Answer:")
-    st.write(simple_nlp_response(user_input))
+    if query:
+        if detect_greeting(query):
+            st.markdown("<h1 style='color: #333333;'>Hello, Welcome to AgriBot! How can I assist you today?</h1>", unsafe_allow_html=True)
+        else:
+            processed_query = preprocess_query(query)
+            search_results = search_google(processed_query)
+            
+            if not search_results:
+                st.warning("No relevant results found. Try rephrasing your query.")
+            else:
+                st.subheader("Top Results:")
+                for result in search_results[:5]:
+                    st.markdown(f"**[{result['title']}]({result['link']})**")
+                    st.write(result["snippet"])
+                    st.write("---")
+                
+                save_to_csv(query, search_results)
+                st.success("Your search history has been saved! ✅")
 
-    st.subheader("Google Search Results:")
-    st.markdown(google_search(user_input))
+elif page == "Search History":
+    st.title("📂 Search History")
+    if os.path.exists(CSV_FILE):
+        df = pd.read_csv(CSV_FILE)
+        st.dataframe(df)
+    else:
+        st.warning("No search history found.")
