@@ -13,7 +13,7 @@ nltk.data.path.append(os.path.abspath("nltk_data"))
 nltk.download('punkt_tab')
 
 # Google Custom Search API Config
-API_KEY = "AIzaSyBGKiSPD8Aj1TWm1OqE9Cpn0laxzE1n0O0"  # Replace with your API key
+API_KEY = "AIzaSyBL_TkrRM32W-u-dO4UnlW2MkRNEOHtYjQ"  # Replace with your API key
 SEARCH_ENGINE_ID = "57e4625115f494176"  # Replace with your CSE ID
 CSV_FILE = "search_history.csv"  # File to store search history
 
@@ -70,7 +70,7 @@ page = st.sidebar.radio("Go to", ["Chatbot", "Search History"])
 # NLP Functions
 def search_google(query):
     """Fetches results from Google Custom Search API"""
-    url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={API_KEY}&cx={SEARCH_ENGINE_ID}&lr=lang_te"
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY};"
     response = requests.get(url).json()
     
     results = []
