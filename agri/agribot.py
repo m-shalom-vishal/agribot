@@ -70,7 +70,7 @@ page = st.sidebar.radio("Go to", ["Chatbot", "Search History"])
 # NLP Functions
 def search_google(query):
     """Fetches results from Google Custom Search API"""
-    url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={API_KEY}&cx={SEARCH_ENGINE_ID}"
+    url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={API_KEY}&cx={SEARCH_ENGINE_ID}&lr=lang_te"
     response = requests.get(url).json()
     
     results = []
