@@ -7,7 +7,7 @@ from nltk.tokenize import word_tokenize
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
-
+from textblob import TextBlob
 
 nltk.data.path.append(os.path.abspath("nltk_data"))
 nltk.download('punkt_tab')
@@ -22,11 +22,11 @@ st.markdown(
     """
     <style>
         .stApp {
-            background: linear-gradient(135deg,rgb(180, 250, 16),rgb(119, 235, 108));
+            background: linear-gradient(135deg,#1e5f30,rgb(119, 235, 108));
             color: #333;
         }
         .sidebar .sidebar-content {
-            background: #25D366;
+            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
         }
         h1 {
             color: yellow;
@@ -69,13 +69,16 @@ page = st.sidebar.radio("Go to", ["Chatbot", "Search History"])
 
 # NLP Functions
 def search_google(query):
-    """Fetches results from Google Custom Search API"""
-    url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={API_KEY}&cx={SEARCH_ENGINE_ID}"
+    """Fetches results from Google Custom Search API in Telugu"""
+    url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={API_KEY}&cx={SEARCH_ENGINE_ID}&hl=te"
     response = requests.get(url).json()
     
     results = []
     for item in response.get("items", []):
-        results.append({"title": item["title"], "link": item["link"], "snippet": item["snippet"]})
+        # Translate title and snippet to Telugu
+        title = translate_text(item["title"], target_lang="te")
+        snippet = translate_text(item["snippet"], target_lang="te")
+        results.append({"title": title, "link": item["link"], "snippet": snippet})
     
     return results
 
@@ -90,6 +93,13 @@ def summarize_text(text, sentences=2):
     summarizer = LsaSummarizer()
     summary = summarizer(parser.document, sentences)
     return " ".join([str(sentence) for sentence in summary])
+
+def translate_text(text, target_lang="te"):
+    """Translates text to Telugu using TextBlob"""
+    try:
+        return str(TextBlob(text).translate(to=target_lang))
+    except:
+        return text  # Return original text if translation fails
 
 def save_to_csv(query, results):
     """Saves search query and results to a CSV file"""
@@ -113,34 +123,33 @@ def detect_greeting(query):
 
 # Page Selection
 if page == "Chatbot":
-    st.markdown("<div class='scrolling-title'>🌾 rAIthumitra - Your Smart Agricultural Assistant 🚜</div>", unsafe_allow_html=True)
+    st.markdown("<div class='scrolling-title'>🌾 AgriBot - Your Smart Agricultural Assistant 🚜</div>", unsafe_allow_html=True)
     
-    query = st.text_input("Enter your question:")
+    query = st.text_input(translate_text("Enter your query:", "te"))
     
     if query:
         if detect_greeting(query):
-            st.markdown("<h1 style='color: #333333;'>Hello, Welcome to Agribot! How can I assist you today?</h1>", unsafe_allow_html=True)
+            st.markdown(f"<h1 style='color: #333333;'>{translate_text('Hello, Welcome to Agribot! How can I assist you today?', 'te')}</h1>", unsafe_allow_html=True)
         else:
             processed_query = preprocess_query(query)
             search_results = search_google(processed_query)
             
             if not search_results:
-                st.warning("No relevant results found. Try rephrasing your query.")
+                st.warning(translate_text("No relevant results found. Try rephrasing your query.", "te"))
             else:
-                st.subheader("Top Results:")
+                st.subheader(translate_text("Top Results:", "te"))
                 for result in search_results[:5]:
-                    summarized_snippet = summarize_text(result["snippet"])
                     st.markdown(f"**[{result['title']}]({result['link']})**")
-                    st.write(summarized_snippet)
+                    st.write(result['snippet'])
                     st.write("---")
                 
                 save_to_csv(query, search_results)
-                st.success("Your search history has been saved! ✅")
+                st.success(translate_text("Your search history has been saved!", "te"))
 
 elif page == "Search History":
-    st.title("📂 Search History")
+    st.title(translate_text("📂 Search History", "te"))
     if os.path.exists(CSV_FILE):
         df = pd.read_csv(CSV_FILE)
         st.dataframe(df)
     else:
-        st.warning("No search history found.")
+        st.warning(translate_text("No search history found.", "te"))
