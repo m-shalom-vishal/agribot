@@ -21,12 +21,12 @@ CSV_FILE = "search_history.csv"  # File to store search history
 st.markdown(
     """
     <style>
-        .stApp { background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+        .stApp { 
+            background: lightgray;
             color: #333;
         }
         .sidebar .sidebar-content {
-           
-            background: linear-gradient(135deg,#1e5f30,rgb(119, 235, 108));
+            background: green;
         }
         h1 {
             color: yellow;
@@ -35,7 +35,7 @@ st.markdown(
         }
         .stTextInput>div>div>input {
             background-color: white;
-            color:darkblue;
+            color: darkblue;
             border: 2px solid #ff9a9e;
             border-radius: 8px;
         }
@@ -52,7 +52,7 @@ st.markdown(
         .scrolling-title {
             font-size: 40px;
             font-weight: bold;
-            color: yellow;
+            color: green;
             white-space: nowrap;
             overflow: hidden;
             display: inline-block;
