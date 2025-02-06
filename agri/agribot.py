@@ -10,7 +10,7 @@ from sumy.summarizers.lsa import LsaSummarizer
 from textblob import TextBlob
 
 nltk.data.path.append(os.path.abspath("nltk_data"))
-nltk.download('punkt')
+nltk.download('punkt_tab')
 
 # Google Custom Search API Config
 API_KEY = "AIzaSyBGKiSPD8Aj1TWm1OqE9Cpn0laxzE1n0O0"  # Replace with your API key
