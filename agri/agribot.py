@@ -21,12 +21,12 @@ CSV_FILE = "search_history.csv"  # File to store search history
 st.markdown(
     """
     <style>
-        .stApp {
-            background: linear-gradient(135deg,#1e5f30,rgb(119, 235, 108));
+        .stApp { background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
             color: #333;
         }
         .sidebar .sidebar-content {
-            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+           
+            background: linear-gradient(135deg,#1e5f30,rgb(119, 235, 108));
         }
         h1 {
             color: yellow;
