@@ -26,10 +26,10 @@ st.markdown(
             color: #333;
         }
         .sidebar .sidebar-content {
-            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+            background: #25D366;
         }
         h1 {
-            color: darkblue;
+            color: yellow;
             text-align: center;
             font-size: 32px;
         }
@@ -113,7 +113,7 @@ def detect_greeting(query):
 
 # Page Selection
 if page == "Chatbot":
-    st.markdown("<div class='scrolling-title'>🌾 AgriBot - Your Smart Agricultural Assistant 🚜</div>", unsafe_allow_html=True)
+    st.markdown("<div class='scrolling-title'>🌾 rAIthumitra - Your Smart Agricultural Assistant 🚜</div>", unsafe_allow_html=True)
     
     query = st.text_input("Enter your question:")
     
