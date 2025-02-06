@@ -52,7 +52,7 @@ st.markdown(
         .scrolling-title {
             font-size: 40px;
             font-weight: bold;
-            color: green;
+            color: yellow;
             white-space: nowrap;
             overflow: hidden;
             display: inline-block;
