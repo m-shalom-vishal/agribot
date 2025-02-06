@@ -10,7 +10,7 @@ from sumy.summarizers.lsa import LsaSummarizer
 from textblob import TextBlob
 
 nltk.data.path.append(os.path.abspath("nltk_data"))
-nltk.download('punkt_tab')
+nltk.download('punkt')
 
 # Google Custom Search API Config
 API_KEY = "AIzaSyBGKiSPD8Aj1TWm1OqE9Cpn0laxzE1n0O0"  # Replace with your API key
@@ -21,22 +21,22 @@ CSV_FILE = "search_history.csv"  # File to store search history
 st.markdown(
     """
     <style>
-        .stApp { 
-            background: lightgray;
+        .stApp {
+            background: linear-gradient(135deg,lightgreen,rgb(119, 235, 108));
             color: #333;
         }
         .sidebar .sidebar-content {
-            background: green;
+            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
         }
         h1 {
-            color: yellow;
+            color: black;
             text-align: center;
             font-size: 32px;
         }
         .stTextInput>div>div>input {
             background-color: white;
-            color: darkblue;
-            border: 2px solid #ff9a9e;
+            color:darkblue;
+            border: 2px solidrgb(73, 18, 20);
             border-radius: 8px;
         }
         .stButton>button {
